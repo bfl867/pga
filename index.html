@@ -498,11 +498,24 @@ async function loadData(manual){
     </div>`).join('');
   }
   try{
-    const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(sheetUrl);
-    const res = await fetch(proxyUrl);
-    console.log('Response status:', res.status, res.ok);
-    if(!res.ok) throw new Error('HTTP ' + res.status);
-    const text = await res.text();
+    // Race all proxies simultaneously — use whichever succeeds first
+    const proxies = [
+      'https://corsproxy.io/?' + encodeURIComponent(sheetUrl),
+      'https://api.allorigins.win/raw?url=' + encodeURIComponent(sheetUrl),
+      'https://thingproxy.freeboard.io/fetch/' + sheetUrl,
+    ];
+
+    const text = await Promise.any(
+      proxies.map(async proxy => {
+        const res = await fetch(proxy, { signal: AbortSignal.timeout(10000) });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const t = await res.text();
+        if (!t || t.length < 10) throw new Error('Empty response');
+        console.log('Proxy succeeded:', proxy.substring(0, 40));
+        return t;
+      })
+    );
+
     console.log('CSV length:', text.length, 'First 100:', text.substring(0,100));
     const rows = parseCSV(text);
     console.log('Parsed rows:', rows.length);
