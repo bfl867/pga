@@ -498,16 +498,27 @@ async function loadData(manual){
     </div>`).join('');
   }
   try{
+    // Cache-buster: append a unique timestamp so neither the browser, the
+    // CORS proxies, nor Google's CDN serve a stale CSV. Without this Chrome
+    // (and the proxies) will keep returning the previous response for
+    // several minutes, making the dashboard appear stuck on old scores.
+    const bust = (sheetUrl.includes('?') ? '&' : '?') + 'cb=' + Date.now();
+    const bustedUrl = sheetUrl + bust;
+
     // Race all proxies simultaneously — use whichever succeeds first
     const proxies = [
-      'https://corsproxy.io/?' + encodeURIComponent(sheetUrl),
-      'https://api.allorigins.win/raw?url=' + encodeURIComponent(sheetUrl),
-      'https://thingproxy.freeboard.io/fetch/' + sheetUrl,
+      'https://corsproxy.io/?' + encodeURIComponent(bustedUrl),
+      'https://api.allorigins.win/raw?url=' + encodeURIComponent(bustedUrl),
+      'https://thingproxy.freeboard.io/fetch/' + bustedUrl,
     ];
 
     const text = await Promise.any(
       proxies.map(async proxy => {
-        const res = await fetch(proxy, { signal: AbortSignal.timeout(10000) });
+        const res = await fetch(proxy, {
+          signal: AbortSignal.timeout(10000),
+          cache: 'no-store',
+          headers: { 'Cache-Control': 'no-cache' }
+        });
         if (!res.ok) throw new Error('HTTP ' + res.status);
         const t = await res.text();
         if (!t || t.length < 10) throw new Error('Empty response');
