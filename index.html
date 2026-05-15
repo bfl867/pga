@@ -242,6 +242,7 @@ body{background:#1a1a1a;min-height:100vh;display:flex;flex-direction:column;alig
 .t-over{background:rgba(50,50,50,0.9);color:var(--white);}
 .t-even{background:rgba(201,168,76,0.2);color:var(--gold);border:1px solid rgba(201,168,76,0.4);}
 .t-none{background:transparent;color:var(--sub);font-size:14px;border:1px solid rgba(255,255,255,0.08);}
+.t-elim{background:rgba(80,80,80,0.6);color:#bbb;font-size:11px;letter-spacing:.15em;font-weight:700;border:1px solid rgba(255,255,255,0.1);}
 
 /* Picks panel */
 .picks-panel{display:none;grid-column:1/-1;background:rgba(0,0,0,0.4);border-top:1px solid rgba(201,168,76,0.2);padding:10px 14px 12px;}
@@ -255,7 +256,7 @@ body{background:#1a1a1a;min-height:100vh;display:flex;flex-direction:column;alig
 .pick-nm{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;color:var(--white);}
 .count-tag{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:0.1em;color:var(--gold);background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.25);border-radius:2px;padding:1px 4px;margin-left:5px;}
 .p-pos{font-family:'DM Mono',monospace;font-size:10px;color:var(--sub);text-align:center;width:38px;}
-.p-thru{font-family:'DM Mono',monospace;font-size:10px;color:var(--sub);text-align:center;width:34px;}
+.p-thru{font-family:'DM Mono',monospace;font-size:8.5px;letter-spacing:.02em;color:var(--sub);text-align:center;width:48px;white-space:nowrap;}
 .p-sc{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;text-align:right;width:44px;}
 .tb-row{margin-top:8px;padding-top:7px;border-top:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;gap:8px;font-family:'DM Mono',monospace;font-size:10px;color:var(--sub);}
 .tb-row .tv{color:var(--muted);}
@@ -575,7 +576,7 @@ function render(rows){
   const sel=document.getElementById('myTeamSelect');
   sel.innerHTML='<option value="">— select your name —</option>';
   pp.forEach(p=>{const o=document.createElement('option');o.value=p.name;o.textContent=p.name;if(p.name===myTeam)o.selected=true;sel.appendChild(o);});
-  if(active[0])document.getElementById('bottomLeft').textContent='Aronimink · Par 70  ·  Leader: '+ftp(active[0].total)+'  ·  Pot: $'+(pp.length*25).toLocaleString();
+  if(active[0])document.getElementById('bottomLeft').textContent='Aronimink · Par 70  ·  Leader: '+ftp(active[0].total)+'  ·  Pot: $300';
   if(isFirst){el.innerHTML=pp.map((p,i)=>buildRow(p,i,nr,started,true)).join('');isFirst=false;}
   else{flipUpdate(el,pp,nr,started);}
   prevR=nr;prevS={};pp.forEach(p=>{prevS[p.name]=p.total;});
@@ -609,7 +610,7 @@ function buildRow(p,i,nr,started,initial,isOpen=false){
   const pr=sp.map((pk,pi)=>{
     const ic=pi<4&&pk.toPar!==null;const ps=ftp(pk.toPar);const pc=pCol(pk.toPar);
     const il=pk.status&&pk.status.includes('active');
-    const th=pk.thru>0?`T${pk.thru}`:pk.status&&pk.status.includes('finish')?'F':'–';
+    const th=pk.thru>0?`THRU ${pk.thru}`:pk.status&&pk.status.includes('finish')?'F':'–';
     return `<tr class="${ic?'counting':''}"><td><span class="pick-nm">${il?'<span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--red);margin-right:4px;vertical-align:middle;animation:blink 1.2s ease-in-out infinite"></span>':''}${esc(pk.name)}</span>${ic?'<span class="count-tag">COUNTING</span>':''}</td><td class="p-pos">${esc(pk.pos||'–')}</td><td class="p-thru">${esc(th)}</td><td class="p-sc" style="color:${pc}">${esc(ps)}</td></tr>`;
   }).join('');
   const tb=(p.pw||p.ps)?`<div class="tb-row"><span style="letter-spacing:.12em;font-size:9px">TIEBREAKER</span><span class="tv">${esc(p.pw||'–')}</span><span style="color:rgba(255,255,255,0.2);margin:0 2px">·</span><span class="tv">${p.ps?ftp(p.ps):'–'}</span></div>`:'';
@@ -618,7 +619,7 @@ function buildRow(p,i,nr,started,initial,isOpen=false){
     <div class="rank-cell"><span class="rank-num ${rnC}">${rank}</span></div>
     <div class="name-cell"><div class="player-name">${esc(p.name)}</div><div class="badges-row">${isLive?'<span class="badge-live">LIVE</span>':''}${comp>0?`<span class="badge-thru">thru R${comp}</span>`:''}${mv}</div></div>
     ${rc(p.r1)}${rc(p.r2)}${rc(p.r3)}${rc(p.r4)}
-    <div class="total-cell"><div class="total-box ${tCls(p.total)}">${esc(ftp(p.total))}</div></div>
+    <div class="total-cell"><div class="total-box ${p.total==='ELIM'?'t-elim':tCls(p.total)}">${p.total==='ELIM'?'ELIM':esc(ftp(p.total))}</div></div>
     <div class="picks-panel ${isOpen?'open':''}">
       <div class="picks-hdr">Picks · tap to collapse</div>
       <table class="picks-table"><tbody>${pr||'<tr><td colspan="4" style="color:var(--sub);font-size:12px">No pick data — run Update Scores in sheet</td></tr>'}</tbody></table>
