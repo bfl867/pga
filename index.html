@@ -576,7 +576,7 @@ function render(rows){
   const sel=document.getElementById('myTeamSelect');
   sel.innerHTML='<option value="">— select your name —</option>';
   pp.forEach(p=>{const o=document.createElement('option');o.value=p.name;o.textContent=p.name;if(p.name===myTeam)o.selected=true;sel.appendChild(o);});
-  if(active[0])document.getElementById('bottomLeft').textContent='Aronimink · Par 70  ·  Leader: '+ftp(active[0].total)+'  ·  Pot: $300';
+  if(active[0])document.getElementById('bottomLeft').textContent='Aronimink · Par 70  ·  Leader: '+ftp(active[0].total)+'  ·  Pot: $'+(pp.length*20).toLocaleString();
   if(isFirst){el.innerHTML=pp.map((p,i)=>buildRow(p,i,nr,started,true)).join('');isFirst=false;}
   else{flipUpdate(el,pp,nr,started);}
   prevR=nr;prevS={};pp.forEach(p=>{prevS[p.name]=p.total;});
