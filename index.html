@@ -644,14 +644,13 @@
     --pgac-gold-deep:  #8E7637;
   }
 
-  /* Helvetica Bold everywhere (Arial Bold fallback on non-Apple) */
+  /* Firelli everywhere (header / chrome / stat cards / dropdown / footer) */
   *, *::before, *::after {
-    font-family: 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif !important;
+    font-family: 'Firelli', 'Playfair Display', 'Bookman Old Style', Georgia, serif !important;
     font-weight: 700 !important;
   }
-  .total-score, .round-pill, .pick-score, .stat-card .stat-value, .rank,
-  .pick-thru, .thru, .pick-meta .pick-thru, #countdown,
-  .tournament-label, .header-meta, .header-meta strong {
+  /* Participant leaderboard tiles ONLY → Helvetica Bold (Arial Bold fallback) */
+  .entry, .entry *, .entry *::before, .entry *::after {
     font-family: 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif !important;
     font-weight: 700 !important;
   }
