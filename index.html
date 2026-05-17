@@ -850,6 +850,45 @@
   .stat-card .stat-label { font-size: 12px !important; letter-spacing: 0.18em !important; font-weight: 800 !important; }
   .stat-card .stat-value { font-size: 34px !important; font-weight: 800 !important; }
   .section-title { font-size: 12px !important; letter-spacing: 0.2em !important; font-weight: 800 !important; }
+
+  /* === Cross-browser mobile sizing safety net === */
+  html, body { -webkit-text-size-adjust: 100%; max-width: 100vw; overflow-x: hidden; }
+  .entry, .score-area, .info { min-width: 0; }
+
+  @media (max-width: 480px) {
+    header { padding: 1rem 0.75rem 0.75rem !important; }
+    .header-inner { gap: 0.5rem !important; }
+    .pga-logo { height: clamp(48px, 12vw, 78px) !important; }
+    .pool-caption { font-size: clamp(16px, 4.4vw, 26px) !important; }
+    .tournament-label { font-size: 9px !important; }
+    .header-meta { font-size: 10px !important; gap: 6px !important; }
+    .live-badge { font-size: 9px !important; padding: 3px 8px !important; }
+    .stats-bar { gap: 6px !important; padding: 0 0.75rem !important; margin: 0.75rem auto !important; }
+    .stat-card { padding: 8px 6px !important; }
+    .stat-card .stat-label { font-size: 9px !important; letter-spacing: 0.1em !important; }
+    .stat-card .stat-value { font-size: 22px !important; }
+    .leaderboard, .my-team-bar { padding-left: 0.75rem !important; padding-right: 0.75rem !important; }
+    .my-team-bar { gap: 6px !important; }
+    .my-team-bar select { font-size: 12px !important; padding: 6px 10px !important; }
+    .btn-clear-team { font-size: 10px !important; padding: 4px 8px !important; }
+    .entry { grid-template-columns: 30px 1fr auto !important; padding: 10px 12px !important; gap: 0 10px !important; }
+    .rank { width: 30px !important; height: 30px !important; font-size: 15px !important; }
+    .entry .participant-name { font-size: 14px !important; letter-spacing: 0.02em !important; }
+    .total-score, .entry.rank-1 .total-score { font-size: 22px !important; min-width: 50px !important; padding: 3px 8px !important; border-width: 2px !important; }
+    .round-pill, .round-pill.has-score { font-size: 9px !important; min-width: 20px !important; padding: 2px 4px !important; border-width: 2px !important; }
+    .round-scores { gap: 4px !important; }
+    .refresh-bar { font-size: 11px !important; padding: 6px 12px !important; max-width: 92vw !important; }
+    footer { padding: 0.75rem 0.75rem 0.5rem !important; }
+  }
+
+  @media (max-width: 360px) {
+    .entry { grid-template-columns: 28px 1fr auto !important; padding: 8px 10px !important; }
+    .rank { width: 28px !important; height: 28px !important; font-size: 13px !important; }
+    .entry .participant-name { font-size: 13px !important; }
+    .total-score, .entry.rank-1 .total-score { font-size: 19px !important; min-width: 44px !important; padding: 2px 6px !important; }
+    .round-pill, .round-pill.has-score { font-size: 8px !important; min-width: 18px !important; }
+    .stat-card .stat-value { font-size: 19px !important; }
+  }
 </style>
 </head>
 <body>
@@ -1238,9 +1277,34 @@ function renderLeaderboard(rows) {
     return;
   }
 
-  // Build new rankings map
+  // Build new rankings map (with golf-style ties)
+  // Players with the same total share the same numeric rank; the next
+  // distinct score jumps by the size of the tie group (e.g. 1, T2, T2, 4).
   const newRankings = {};
-  participants.forEach((p, i) => { if (p.total !== '') newRankings[p.name] = i + 1; });
+  let lastTotal = null;
+  let lastRank  = 0;
+  participants.forEach((p, i) => {
+    if (p.total === '' || isNaN(parseFloat(p.total))) {
+      p.displayRank = '–';
+      p.rankNum     = null;
+      return;
+    }
+    const totalNum = parseFloat(p.total);
+    const rankNum  = (lastTotal !== null && totalNum === lastTotal) ? lastRank : (i + 1);
+    lastTotal = totalNum;
+    lastRank  = rankNum;
+    p.rankNum     = rankNum;
+    newRankings[p.name] = rankNum;
+  });
+  // Determine which ranks are tied (appear more than once)
+  const rankCounts = {};
+  participants.forEach(p => {
+    if (p.rankNum != null) rankCounts[p.rankNum] = (rankCounts[p.rankNum] || 0) + 1;
+  });
+  participants.forEach(p => {
+    if (p.rankNum == null) { p.displayRank = '–'; return; }
+    p.displayRank = (rankCounts[p.rankNum] > 1 ? 'T' : '') + p.rankNum;
+  });
 
   // Populate My Team dropdown with current participants
   const select = document.getElementById('myTeamSelect');
@@ -1362,15 +1426,16 @@ function flipUpdate(container, participants, newRankings, started) {
 // ── Build a single entry's HTML ──────────────────────────────
 function buildEntryHTML(p, i, newRankings, started, initial, isOpen = false) {
   const hasScore  = p.total !== '' && !isNaN(parseFloat(p.total));
-  const rank      = started && hasScore ? i + 1 : '–';
-  const rankCls   = rank === 1 ? 'top1' : rank === 2 ? 'top2' : rank === 3 ? 'top3' : '';
-  const entryCls  = rank === 1 ? 'rank-1' : rank === 2 ? 'rank-2' : rank === 3 ? 'rank-3' : '';
+  const rankNum   = p.rankNum;
+  const rank      = started && hasScore ? (p.displayRank || (i + 1)) : '–';
+  const rankCls   = rankNum === 1 ? 'top1' : rankNum === 2 ? 'top2' : rankNum === 3 ? 'top3' : '';
+  const entryCls  = rankNum === 1 ? 'rank-1' : rankNum === 2 ? 'rank-2' : rankNum === 3 ? 'rank-3' : '';
   const isMyTeam  = p.name === myTeam;
 
   // Movement indicator
   let movementHtml = '';
-  if (!initial && hasScore && prevRankings[p.name] !== undefined) {
-    const diff = prevRankings[p.name] - rank;
+  if (!initial && hasScore && prevRankings[p.name] !== undefined && rankNum != null) {
+    const diff = prevRankings[p.name] - rankNum;
     if (diff > 0)      movementHtml = `<span class="movement up">▲${diff}</span>`;
     else if (diff < 0) movementHtml = `<span class="movement down">▼${Math.abs(diff)}</span>`;
   }
