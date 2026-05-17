@@ -242,7 +242,7 @@ body{background:#1a1a1a;min-height:100vh;display:flex;flex-direction:column;alig
 .t-over{background:rgba(50,50,50,0.9);color:var(--white);}
 .t-even{background:rgba(201,168,76,0.2);color:var(--gold);border:1px solid rgba(201,168,76,0.4);}
 .t-none{background:transparent;color:var(--sub);font-size:14px;border:1px solid rgba(255,255,255,0.08);}
-.t-elim{background:rgba(80,80,80,0.6);color:#bbb;font-size:11px;letter-spacing:.15em;font-weight:700;border:1px solid rgba(255,255,255,0.1);}
+.t-cut{background:rgba(80,80,80,0.6);color:#bbb;font-size:11px;letter-spacing:.15em;font-weight:700;border:1px solid rgba(255,255,255,0.1);}
 
 /* Picks panel */
 .picks-panel{display:none;grid-column:1/-1;background:rgba(0,0,0,0.4);border-top:1px solid rgba(201,168,76,0.2);padding:10px 14px 12px;}
@@ -631,7 +631,7 @@ function buildRow(p,i,nr,started,initial,isOpen=false){
     <div class="rank-cell"><span class="rank-num ${rnC}">${rank}</span></div>
     <div class="name-cell"><div class="player-name">${esc(p.name)}</div><div class="badges-row">${isLive?'<span class="badge-live">LIVE</span>':''}${comp>0?`<span class="badge-thru">thru R${comp}</span>`:''}${mv}</div></div>
     ${rc(p.r1)}${rc(p.r2)}${rc(p.r3)}${rc(p.r4)}
-    <div class="total-cell"><div class="total-box ${p.total==='ELIM'?'t-elim':tCls(p.total)}">${p.total==='ELIM'?'ELIM':esc(ftp(p.total))}</div></div>
+    <div class="total-cell"><div class="total-box ${(p.total==='ELIM'||p.total==='CUT')?'t-cut':tCls(p.total)}">${(p.total==='ELIM'||p.total==='CUT')?'CUT':esc(ftp(p.total))}</div></div>
     <div class="picks-panel ${isOpen?'open':''}">
       <div class="picks-hdr">Picks · tap to collapse</div>
       <table class="picks-table"><tbody>${pr||'<tr><td colspan="4" style="color:var(--sub);font-size:12px">No pick data — run Update Scores in sheet</td></tr>'}</tbody></table>
