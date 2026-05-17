@@ -644,16 +644,16 @@
     --pgac-gold-deep:  #8E7637;
   }
 
-  /* Firelli everywhere */
+  /* Helvetica Bold everywhere (Arial Bold fallback on non-Apple) */
   *, *::before, *::after {
-    font-family: 'Firelli', 'Playfair Display', 'Bookman Old Style', Georgia, serif !important;
+    font-family: 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif !important;
     font-weight: 700 !important;
   }
-  /* Numerics stay in a clean serif so digits read cleanly */
   .total-score, .round-pill, .pick-score, .stat-card .stat-value, .rank,
   .pick-thru, .thru, .pick-meta .pick-thru, #countdown,
   .tournament-label, .header-meta, .header-meta strong {
-    font-family: 'Playfair Display', 'Bookman Old Style', Georgia, serif !important;
+    font-family: 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif !important;
+    font-weight: 700 !important;
   }
 
   /* Body: navy gradient */
@@ -942,7 +942,8 @@ const TOURNAMENT_CONFIG = {
   dates:    'May 15 – 18',
   par:      'Par 70',
   caption:  'Championship Pool',
-  entryFee: '25'                   // $ per participant — drives the Pot stat card
+  entryFee: '25',                  // $ per participant (used if `pot` below is blank)
+  pot:      '300'                  // fixed pot $ — leave blank to auto-calc from entryFee × entries
 };
 // ─────────────────────────────────────────────────────────────
 
@@ -1258,7 +1259,11 @@ function renderLeaderboard(rows) {
   prevScores   = {};
   participants.forEach(p => { prevScores[p.name] = p.total; });
 
-  updateStats(participants.length, formatToPar(active[0] ? active[0].total : ''), participants.length * (parseInt(TOURNAMENT_CONFIG.entryFee, 10) || 25));
+  const fixedPot = parseInt(TOURNAMENT_CONFIG.pot, 10);
+  const potValue = !isNaN(fixedPot) && fixedPot > 0
+    ? fixedPot
+    : participants.length * (parseInt(TOURNAMENT_CONFIG.entryFee, 10) || 25);
+  updateStats(participants.length, formatToPar(active[0] ? active[0].total : ''), potValue);
   const now = new Date();
   document.getElementById('lastUpdated').textContent =
     `Last updated · ${now.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'})}`;
