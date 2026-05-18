@@ -664,17 +664,27 @@
     font-weight: 700 !important;
   }
 
-  /* Body: navy gradient */
+  /* Body: rich navy → gold gradient */
   body {
-    background: linear-gradient(180deg, var(--pgac-navy-mid) 0%, var(--pgac-navy) 45%, var(--pgac-navy-deep) 100%) !important;
+    background:
+      radial-gradient(ellipse 60% 40% at 85% 12%, rgba(224,194,129,0.55) 0%, rgba(197,165,97,0.25) 35%, transparent 70%),
+      radial-gradient(ellipse 70% 50% at 15% 95%, rgba(197,165,97,0.40) 0%, rgba(197,165,97,0.15) 40%, transparent 75%),
+      linear-gradient(160deg,
+        var(--pgac-navy-mid)  0%,
+        var(--pgac-navy)      30%,
+        var(--pgac-navy-deep) 60%,
+        var(--pgac-gold-deep) 90%,
+        var(--pgac-gold)      100%) !important;
     background-attachment: fixed !important;
     color: #fff !important;
   }
   body::before { display: none !important; }
 
-  /* Header: gold band above the line */
+  /* Header: gold band above the line with subtle navy sheen */
   header {
-    background: var(--pgac-gold) !important;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.18) 0%, transparent 45%),
+      linear-gradient(135deg, var(--pgac-gold-light) 0%, var(--pgac-gold) 50%, var(--pgac-gold-deep) 100%) !important;
     border-bottom: 3px solid var(--pgac-navy) !important;
   }
 
